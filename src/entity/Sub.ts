@@ -1,4 +1,3 @@
-import { IsEmail, Length } from 'class-validator';
 import {
   Entity as TOEntity,
   Column,
@@ -10,7 +9,6 @@ import {
 
 import Entity from './Entity';
 import User from './User';
-import { makeId, slugify } from '../utile/helpers';
 import Post from './Post';
 
 @TOEntity('subs')
