@@ -96,6 +96,7 @@ const me = (_: Request, res: Response) => {
 };
 
 const logout = (_: Request, res: Response) => {
+  console.log('Logout server route!!');
   res.set(
     'Set-Cookie',
     cookie.serialize('token', '', {
@@ -112,7 +113,7 @@ const logout = (_: Request, res: Response) => {
 const router = Router();
 router.post('/register', register);
 router.post('/login', login);
-router.post('/logout', user, auth, logout);
+router.get('/logout', user, auth, logout);
 router.get('/me', user, auth, me);
 
 export default router;
