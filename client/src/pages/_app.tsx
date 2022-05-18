@@ -3,6 +3,7 @@ import { AppProps } from 'next/app';
 import axios from 'axios';
 
 import '../styles/tailwind.css';
+import '../styles/icons.css';
 
 import Navbar from '../components/Navbar';
 import Router, { useRouter } from 'next/router';

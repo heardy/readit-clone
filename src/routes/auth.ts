@@ -7,6 +7,7 @@ import cookie from 'cookie';
 import { AppDataSource } from '../data-source';
 import User from '../entity/User';
 import auth from '../middleware/auth';
+import user from '../middleware/user';
 
 const mapErrors = (errors: Object[]) => {
   return errors.reduce((prev: any, err: any) => {
@@ -111,7 +112,7 @@ const logout = (_: Request, res: Response) => {
 const router = Router();
 router.post('/register', register);
 router.post('/login', login);
-router.post('/logout', auth, logout);
-router.get('/me', auth, me);
+router.post('/logout', user, auth, logout);
+router.get('/me', user, auth, me);
 
 export default router;
