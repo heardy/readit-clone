@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import cookie from 'cookie';
 
-import { AppDataSource } from '../data-source';
 import User from '../entity/User';
 import auth from '../middleware/auth';
 import user from '../middleware/user';
@@ -20,11 +19,9 @@ const register = async (req: Request, res: Response) => {
   const { email, username, password } = req.body;
 
   try {
-    const userRepository = AppDataSource.getRepository(User);
-
     let errors: any = {};
-    const emailUser = await userRepository.findOneBy({ email });
-    const usernameUser = await userRepository.findOneBy({ username });
+    const emailUser = await User.findOne({ email });
+    const usernameUser = await await User.findOne({ username });
 
     if (emailUser) errors.email = 'Email is already taken';
     if (usernameUser) errors.username = 'Username is already taken';
@@ -61,8 +58,7 @@ const login = async (req: Request, res: Response) => {
 
     if (Object.keys(errors).length > 0) return res.status(400).json(errors);
 
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({ username });
+    const user = await User.findOne({ username });
 
     if (!user) return res.status(404).json({ username: 'User not found!' });
 

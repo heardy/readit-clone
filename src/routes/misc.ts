@@ -1,9 +1,9 @@
 import { Request, Response, Router } from 'express';
-import { AppDataSource } from '../data-source';
 import Comment from '../entity/Comment';
 import Post from '../entity/Post';
 import User from '../entity/User';
 import Vote from '../entity/Vote';
+
 import auth from '../middleware/auth';
 import user from '../middleware/user';
 
@@ -16,43 +16,16 @@ const vote = async (req: Request, res: Response) => {
 
   try {
     const user: User = res.locals.user;
-
-    let post = await AppDataSource.getRepository(Post).findOneByOrFail({
-      identifier,
-      slug,
-    });
-
-    let vote: Vote | null;
+    let post = await Post.findOneOrFail({ identifier, slug });
+    let vote: Vote | undefined;
     let comment: Comment | undefined;
 
     if (commentIdentifier) {
       // find vote by comment
-
-      comment = await AppDataSource.getRepository(Comment).findOneByOrFail({
-        identifier: commentIdentifier,
-      });
-
-      vote = await AppDataSource.getRepository(Vote)
-        .createQueryBuilder('vote')
-        .leftJoinAndSelect('vote.user', 'user')
-        .leftJoinAndSelect('vote.comment', 'comment')
-        .where('user.username = :username and comment.id = :commentId', {
-          username: user.username,
-          commentId: comment.id,
-        })
-        .getOne();
-
-      console.log('>>>comment vote', vote);
+      comment = await Comment.findOneOrFail({ identifier: commentIdentifier });
+      vote = await Vote.findOne({ user, comment });
     } else {
-      vote = await AppDataSource.getRepository(Vote)
-        .createQueryBuilder('vote')
-        .leftJoinAndSelect('vote.user', 'user')
-        .leftJoinAndSelect('vote.post', 'post')
-        .where('user.username = :username and post.id = :postId', {
-          username: user.username,
-          postId: post.id,
-        })
-        .getOne();
+      vote = await Vote.findOne({ user, post });
     }
 
     if (!vote && value === 0) {
@@ -73,13 +46,10 @@ const vote = async (req: Request, res: Response) => {
       await vote.save();
     }
 
-    post = await AppDataSource.getRepository(Post).findOneOrFail({
-      where: {
-        identifier,
-        slug,
-      },
-      relations: ['comments', 'comments.votes', 'sub', 'votes'],
-    });
+    post = await Post.findOneOrFail(
+      { identifier, slug },
+      { relations: ['comments', 'comments.votes', 'sub', 'votes'] }
+    );
     post.setUserVote(user);
     post.comments.forEach(c => c.setUserVote(user));
 

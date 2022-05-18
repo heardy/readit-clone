@@ -1,4 +1,4 @@
-import { AppDataSource } from './data-source';
+import { createConnection } from 'typeorm';
 
 import express from 'express';
 import morgan from 'morgan';
@@ -40,7 +40,7 @@ app.listen(PORT, async () => {
   console.log(`Server running at http://localhost:${PORT}`);
 
   try {
-    await AppDataSource.initialize();
+    await createConnection();
     console.log('Database connected!');
   } catch (err) {
     console.log(err);

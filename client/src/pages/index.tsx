@@ -1,29 +1,19 @@
-import axios from 'axios';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { GetServerSideProps } from 'next';
+// import { GetServerSideProps } from 'next';
 import Head from 'next/head';
-import Link from 'next/link';
-import { Fragment, useEffect, useState } from 'react';
-
-import { Post } from '../types';
+import { Fragment } from 'react';
+import useSWR from 'swr';
 
 import PostCard from '../components/PostCard';
 
 dayjs.extend(relativeTime);
 
 export default function Home() {
-  const [posts, setPosts] = useState<Post[]>([]);
-
-  useEffect(() => {
-    axios
-      .get('/posts')
-      .then(res => setPosts(res.data))
-      .catch(err => console.log(err));
-  }, []);
+  const { data: posts = [] } = useSWR('/posts');
 
   return (
-    <div className="pt-12">
+    <Fragment>
       <Head>
         <title>readit: the frontpage of the internet</title>
       </Head>
@@ -37,7 +27,7 @@ export default function Home() {
 
         {/* Sidebar */}
       </div>
-    </div>
+    </Fragment>
   );
 }
 

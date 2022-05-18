@@ -1,11 +1,12 @@
-import { isEmpty } from 'class-validator';
 import { Request, Response, Router } from 'express';
-import { AppDataSource } from '../data-source';
-import Sub from '../entity/Sub';
+import { isEmpty } from 'class-validator';
+import { getRepository } from 'typeorm';
 
 import User from '../entity/User';
+import Sub from '../entity/Sub';
 import auth from '../middleware/auth';
 import user from '../middleware/user';
+import Post from '../entity/Post';
 
 const createSub = async (req: Request, res: Response) => {
   const { name, title, description } = req.body;
@@ -18,7 +19,7 @@ const createSub = async (req: Request, res: Response) => {
     if (isEmpty(name)) errors.name = 'Name must not be empty';
     if (isEmpty(title)) errors.title = 'Title must not be empty';
 
-    const sub = await AppDataSource.getRepository(Sub)
+    const sub = await getRepository(Sub)
       .createQueryBuilder('sub')
       .where('lower(sub.name) = :name', { name: name.toLowerCase() })
       .getOne();
@@ -43,7 +44,32 @@ const createSub = async (req: Request, res: Response) => {
   }
 };
 
+const getSub = async (req: Request, res: Response) => {
+  const name = req.params.name;
+
+  try {
+    const sub = await Sub.findOneOrFail({ name });
+    const posts = await Post.find({
+      where: { sub },
+      order: { createdAt: 'DESC' },
+      relations: ['comments', 'votes'],
+    });
+
+    sub.posts = posts;
+
+    if (res.locals.user) {
+      sub.posts.forEach(p => p.setUserVote(res.locals.user));
+    }
+
+    return res.json(sub);
+  } catch (err) {
+    console.log(err);
+    return res.status(404).json({ error: 'Sub not found' });
+  }
+};
+
 const router = Router();
 router.post('/', user, auth, createSub);
+router.get('/:name', user, getSub);
 
 export default router;

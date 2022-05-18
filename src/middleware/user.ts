@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import { AppDataSource } from '../data-source';
 import User from '../entity/User';
 
 export default async (req: Request, res: Response, next: NextFunction) => {
@@ -11,8 +10,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
     const { username }: any = jwt.verify(token, process.env.JWT_SECRET!);
 
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOneBy({ username });
+    const user = await User.findOne({ username });
 
     res.locals.user = user;
 

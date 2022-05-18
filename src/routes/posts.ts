@@ -1,5 +1,4 @@
 import { Request, Response, Router } from 'express';
-import { AppDataSource } from '../data-source';
 import Comment from '../entity/Comment';
 import Post from '../entity/Post';
 import Sub from '../entity/Sub';
@@ -18,9 +17,7 @@ const createPost = async (req: Request, res: Response) => {
 
   try {
     // find sub
-    const subRecord = await AppDataSource.getRepository(Sub).findOneByOrFail({
-      name: sub,
-    });
+    const subRecord = await Sub.findOneOrFail({ name: sub });
 
     const post = new Post({ title, body, user, sub: subRecord });
     await post.save();
@@ -34,7 +31,7 @@ const createPost = async (req: Request, res: Response) => {
 
 const getPosts = async (_: Request, res: Response) => {
   try {
-    const posts = await AppDataSource.getRepository(Post).find({
+    const posts = await Post.find({
       order: { createdAt: 'DESC' },
       relations: ['comments', 'votes', 'sub'],
     });
@@ -53,13 +50,10 @@ const getPosts = async (_: Request, res: Response) => {
 const getPost = async (req: Request, res: Response) => {
   const { identifier, slug } = req.params;
   try {
-    const post = await AppDataSource.getRepository(Post).findOneOrFail({
-      where: {
-        identifier,
-        slug,
-      },
-      relations: ['sub'],
-    });
+    const post = await Post.findOneOrFail(
+      { identifier, slug },
+      { relations: ['sub'] }
+    );
 
     return res.json(post);
   } catch (err) {
@@ -71,16 +65,16 @@ const getPost = async (req: Request, res: Response) => {
 const commentsOnPost = async (req: Request, res: Response) => {
   const { identifier, slug } = req.params;
   const { body } = req.body;
+
   try {
-    const post = await AppDataSource.getRepository(Post).findOneOrFail({
-      where: {
-        identifier,
-        slug,
-      },
-      relations: ['sub'],
+    const post = await Post.findOneOrFail({ identifier, slug });
+
+    const comment = new Comment({
+      body,
+      user: res.locals.user,
+      post,
     });
 
-    const comment = new Comment({ body, user: res.locals.user, post });
     await comment.save();
 
     return res.json(comment);

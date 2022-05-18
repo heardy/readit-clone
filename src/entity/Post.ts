@@ -11,7 +11,7 @@ import {
 
 import Entity from './Entity';
 import User from './User';
-import { makeId, slugify } from '../utile/helpers';
+import { makeId, slugify } from '../util/helpers';
 import Sub from './Sub';
 import Comment from './Comment';
 import { Exclude, Expose } from 'class-transformer';
